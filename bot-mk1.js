@@ -9,6 +9,8 @@
 * Disclaimer: No one is responsible if you lose money whilst using this script!
 */
 
+//Version
+var version = 1.3;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -42,7 +44,7 @@ var useCrashAverage = true;
 // Default: false - Enable editing current multiplier based on past 4 crash average. (Experimental!)
 
 var highAverage = 1.85; 
-// Default: 1870 - Average multiplier to use the highAverageMultiplier.
+// Default: 1.85 - Average multiplier to use the highAverageMultiplier.
 
 var highAverageMultiplier = 1.50;
 // Default: 1.30 - Multiplier to use when crash average is above highAverage.
@@ -130,6 +132,7 @@ var waitTime = -1;
 var lossStreak;
 var alreadyRan;
 var highLow;
+var temptime = 500;
 
 if(startup == true){
 	printStartup();
@@ -402,8 +405,11 @@ engine.on('game_crash', function(data){
 		printResults();
 	}
 	
-	if(clearConsole == true && timeplaying >= 500){
-		console.clear();
+	if(clearConsole == true){
+		if(timeplaying == temptime){
+			temptime += 500;
+			console.clear();
+		}
 	}
 	
 	currentGame++;
@@ -451,7 +457,7 @@ function printStartup(){
 	console.log("Bot started!");
 	console.log(" ");
 	console.log("VoxelLoop Bet-Bot");
-	console.log("Version 1.2");
+	console.log("Version " + version);
 	console.log("Start balance: ", (startBalance / 100));
 	console.log(" ");
 }
