@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.4;
+var version = 1.41;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -156,6 +156,10 @@ var getJSON = function(url, callback) {
 };
 
 if(startup == true){
+	if(mode == 3 && maxLossCount < 10){
+		window.alert("We suggest you set Max Loss Count to more than 10 for Martingale!");
+	}
+	
     printStartup();
 	jsonInc = randNum(1,999999);
 	startup = false;
