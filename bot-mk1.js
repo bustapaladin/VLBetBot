@@ -68,6 +68,10 @@ var mode2multiplyBy = 1.16;
 var mode2waitAfterWin = 8;
 // Default: 8 - How many rounds to wait after a win before placing again. (0 to disable)
 
+//----------Mode 3 Settings----------//
+var mode3cashOut = 2.1;
+// Default: 2.1 - Amount to cash out in mode 3.
+
 //----------Misc----------//
 var maxNegative = 99999999; 
 // The max amount to allow the profit to drop to before the bot will stop.
@@ -158,6 +162,7 @@ var getJSON = function(url, callback) {
 if(startup == true){
 	if(mode == 3 && maxLossCount < 10){
 		window.alert("We suggest you set Max Loss Count to more than 10 for Martingale!");
+		engine.stop();
 	}
 	
     printStartup();
@@ -460,7 +465,7 @@ engine.on('game_starting', function(info){
 			//First Game
 			if(firstGame == true && betPlaced == false){
 				currentBet = baseBet;
-				currentMultiplier = 2;
+				currentMultiplier = mode3cashOut;
 				firstGame = false;
 				placeBet();
 				newdate = new Date();
@@ -479,7 +484,7 @@ engine.on('game_starting', function(info){
 				
 				lossStreak++;
 				currentBet *= 2;
-				currentMultiplier = 2;
+				currentMultiplier = mode3cashOut;
 				console.log("Bet changed to: " + currentBet);
 				placeBet();
 				betPlaced = true;
@@ -489,7 +494,7 @@ engine.on('game_starting', function(info){
 			if(lastResult == "WON" && betPlaced == false){
 				
 				currentBet = baseBet;
-				currentMultiplier = 2;
+				currentMultiplier = mode3cashOut;
 				firstLoss = true;
 			
 				placeBet();
