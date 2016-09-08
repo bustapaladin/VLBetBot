@@ -91,8 +91,6 @@ var mode = 4;
 
 // 1 = Default - Mode will place a bet at the base amount and base multiplier. On loss, it will raise the bet by 4x and increase the multiplier to a max of 1.33x.
 // 2 = 9x Seeker - Mode will place the base amount and 9x multiplier. On loss, it will raise the bet by mode2multiplyBy until a 10x is reached.
-// 3 = Martingale - Multiplies on loss.
-// 4 = mess.js - *Some profound description here*
 
 //Do not edit below this line!
 
