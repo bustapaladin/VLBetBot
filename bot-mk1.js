@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.41;
+var version = 1.5;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -21,7 +21,7 @@ var BustaBit = true;
 var autoBaseBetEnabled = true; 
 // Default: false - Enable/Disable auto base bet. Described below.
 
-var maxLossCount = 8;
+var maxLossCount = 10;
 // Default: 5 - Max amount of loses to account for with autoBaseBetEnabled set to true.
 
 var percentageOfTotal = 100;
@@ -30,7 +30,7 @@ var percentageOfTotal = 100;
 var baseBet = 10; 
 // Default: 100 - Manual base bet, only used when autoBaseBetEnabled is false.
 
-var cashOut = 1.35; 
+var cashOut = 1.50; 
 // Default: 1.13 - Cash out at this amount. Some modes will have a locked cash out.
 
 var maxBet = 99999999; 
@@ -87,7 +87,7 @@ var experimentalFeatures = false;
 // Default: false - Enable experimental web-based settings.
 
 //----------Modes----------//
-var mode = 3; 
+var mode = 4; 
 
 // 1 = Default - Mode will place a bet at the base amount and base multiplier. On loss, it will raise the bet by 4x and increase the multiplier to a max of 1.33x.
 // 2 = 9x Seeker - Mode will place the base amount and 9x multiplier. On loss, it will raise the bet by mode2multiplyBy until a 10x is reached.
@@ -142,6 +142,7 @@ var highLow;
 var temptime = 500;
 var jsonInc
 var firstGrab = true;
+var recovering = false;
 
 //JSON Grabber
 var getJSON = function(url, callback) {
@@ -244,13 +245,13 @@ engine.on('game_starting', function(info){
 	if(autoBaseBetEnabled == true && lastResult == "WON" || firstGame == true){
 		var divider = 100;
 		for (i = 0; i < maxLossCount; i++) {
-			if(mode == 1 || mode == 5){
+			if(mode == 1){
 				divider += (100 * Math.pow(4, (i + 1)));
 			}
 			if(mode == 2){
 				divider += (100 * Math.pow(mode2multiplyBy, (i + 1)));
 			}
-			if(mode == 3){
+			if(mode == 3 || mode == 4){
 				divider += (100 * Math.pow(2, (i + 1)));
 			}
 		}
@@ -497,6 +498,89 @@ engine.on('game_starting', function(info){
 				currentMultiplier = mode3cashOut;
 				firstLoss = true;
 			
+				placeBet();
+				betPlaced = true;
+			}
+		}
+		
+		//Gamemode 4 (mess.js)
+		if(mode == 4){
+			//Shutdown on max loss
+			if(lossCount > maxLossCount){
+				console.log("Max loss count reached! Shutting down...");
+				engine.stop();
+			}
+			
+			//Reset cooldown
+			if (resetLoss == true) {
+				if (lossCount == 0) {
+				resetLoss = false;
+			}
+			else {
+				lossCount--;
+				console.log('Waiting a few games! Games remaining: ' + lossCount);
+				return;
+				}
+			}
+			
+			//First Game
+			if(firstGame == true && betPlaced == false){
+				currentBet = baseBet;
+				currentMultiplier = cashOut;
+				firstGame = false;
+				placeBet();
+				newdate = new Date();
+				timeplaying = ((newdate.getTime() - startTime) / 1000) / 60;
+				betPlaced = true;
+			}
+			
+			//On Lost
+			if(lastResult == "LOST" && betPlaced == false){
+				if(firstLoss == true){
+					lossBalance = 0;
+					firstLoss = false;
+					recovering = true;
+				}
+				if(lossCount < 2){
+					if(currentBet >= (engine.getBalance() / 4)){
+						console.log("Current bet too large!");
+						currentBet = currentBet / 2;
+					}
+					else{
+						currentBet *= 2;
+					}
+				}
+				if((currentBet * 100) >= engine.getBalance()){
+					console.log("Not enough balance to place next recovery bet!");
+					currentBet = baseBet;
+				}
+				lossBalance += lastBet;
+				Math.ceil(lossBalance);
+				placeBet();
+				betPlaced = true;
+				console.log("Amount to recover: " + lossBalance);
+			}
+			
+			//On Win
+			if(lastResult == "WON" && betPlaced == false){
+				if(lossBalance <= 0 && recovering == true){
+					lossBalance = 0;
+					console.log("Loss recovered!");
+					firstLoss = true;
+					currentBet = baseBet;
+					recovering = false;
+				}
+				else if (recovering == true && lossBalance > 0){
+					lossBalance -= ((currentBet * cashOut) - currentBet);
+					Math.ceil(lossBalance);
+					console.log("Amount to recover: " + lossBalance);
+					if((lossBalance * 2) < currentBet && lossBalance != 0){
+						currentBet = (lossBalance * 2);
+					}
+				}
+				else if (recovering == false){
+					console.log();
+				}
 				placeBet();
 				betPlaced = true;
 			}
