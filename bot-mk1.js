@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.5;
+var version = 1.53;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -325,7 +325,7 @@ engine.on('game_starting', function(info){
 					console.log("Waiting for " + waitForBeforeRecovery + "x before placing recovery bet.");
 					console.log("----------------------------");
 				}
-				else if (waitForBeforeRecovery == false){
+				else if (waitForBeforeRecoveryEnabled == false){
 					var lastLoss = currentBet;
 					lossBalance += lastLoss;
 					lastLoss /= 4;
