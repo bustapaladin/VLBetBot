@@ -21,7 +21,7 @@ var BustaBit = true;
 var autoBaseBetEnabled = true; 
 // Default: false - Enable/Disable auto base bet. Described below.
 
-var maxLossCount = 10;
+var maxLossCount = 5;
 // Default: 5 - Max amount of loses to account for with autoBaseBetEnabled set to true.
 
 var percentageOfTotal = 100;
@@ -30,7 +30,7 @@ var percentageOfTotal = 100;
 var baseBet = 10; 
 // Default: 100 - Manual base bet, only used when autoBaseBetEnabled is false.
 
-var cashOut = 1.50; 
+var cashOut = 1.13; 
 // Default: 1.13 - Cash out at this amount. Some modes will have a locked cash out.
 
 var maxBet = 99999999; 
@@ -50,16 +50,16 @@ var highAverageMultiplier = 2.0;
 // Default: 2.0 - Multiplier to use when crash average is above highAverage.
 
 var lowAverage = 1.70;
-// Default: 1.60 - Average multiplier to use the lowAverageMultiplier.
+// Default: 1.70 - Average multiplier to use the lowAverageMultiplier.
 
 var lowAverageMultiplier = 1.02;
 // Default: 1.05 - Multiplier to use when crash average is below lowAverage.
 
-var waitForBeforeRecoveryEnabled = true;
+var waitForBeforeRecoveryEnabled = false;
 // Default: false - Wait for x multiplier to hit before placing the recovery bet.
 
 var waitForBeforeRecovery = 1.30;
-// Default: 1.60 - Amount to wait for before placing recovery bet.
+// Default: 1.30 - Amount to wait for before placing recovery bet.
 
 //----------Mode 2 Settings----------//
 var mode2multiplyBy = 1.16;
@@ -87,7 +87,7 @@ var experimentalFeatures = false;
 // Default: false - Enable experimental web-based settings.
 
 //----------Modes----------//
-var mode = 4; 
+var mode = 1; 
 
 // 1 = Default - Mode will place a bet at the base amount and base multiplier. On loss, it will raise the bet by 4x and increase the multiplier to a max of 1.33x.
 // 2 = 9x Seeker - Mode will place the base amount and 9x multiplier. On loss, it will raise the bet by mode2multiplyBy until a 10x is reached.
@@ -324,6 +324,21 @@ engine.on('game_starting', function(info){
 				else if (waitForBeforeRecoveryEnabled == true){
 					console.log("Waiting for " + waitForBeforeRecovery + "x before placing recovery bet.");
 					console.log("----------------------------");
+				}
+				else if (waitForBeforeRecovery == false){
+					var lastLoss = currentBet;
+					lossBalance += lastLoss;
+					lastLoss /= 4;
+					lossStreak++;
+					
+					currentBet *= 4;
+					currentMultiplier = 1 + (lossBalance / currentBet);
+					console.log("Bet changed to: " + currentBet);
+					if(game4 == null){
+						currentMultiplier = 1.02;
+					}
+					placeBet();
+					betPlaced = true;
 				}
 			}
 			
