@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.53;
+var version = 1.54;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -92,7 +92,6 @@ var mode = 1;
 // 1 = Default - Mode will place a bet at the base amount and base multiplier. On loss, it will raise the bet by 4x and increase the multiplier to a max of 1.33x.
 // 2 = 9x Seeker - Mode will place the base amount and 9x multiplier. On loss, it will raise the bet by mode2multiplyBy until a 10x is reached.
 // 3 = Martingale - Multiplies on loss.
-// 4 = mess.js - *Some profound description here*
 
 //Do not edit below this line!
 
@@ -558,19 +557,6 @@ engine.on('game_starting', function(info){
 					firstLoss = false;
 					recovering = true;
 				}
-				if(lossCount < 2){
-					if(currentBet >= (engine.getBalance() / 4)){
-						console.log("Current bet too large!");
-						currentBet = currentBet / 2;
-					}
-					else{
-						currentBet *= 2;
-					}
-				}
-				if((currentBet * 100) >= engine.getBalance()){
-					console.log("Not enough balance to place next recovery bet!");
-					currentBet = baseBet;
-				}
 				lossBalance += lastBet;
 				Math.ceil(lossBalance);
 				placeBet();
@@ -580,23 +566,28 @@ engine.on('game_starting', function(info){
 			
 			//On Win
 			if(lastResult == "WON" && betPlaced == false){
-				if(lossBalance <= 0 && recovering == true){
+				if (recovering == true && lossBalance > 0){
+					lossBalance -= ((currentBet * cashOut) - currentBet);
+					Math.ceil(lossBalance);
+					console.log("Amount to recover: " + lossBalance);
+					currentBet *= 2;
+					if((lossBalance * 2) < currentBet && lossBalance != 0){
+						currentBet = (lossBalance * 2);
+					}
+					if (lossBalance <= 0) {
+					    currentBet = baseBet;
+					}
+				}
+				else if(lossBalance <= 0 && recovering == true){
 					lossBalance = 0;
 					console.log("Loss recovered!");
 					firstLoss = true;
 					currentBet = baseBet;
 					recovering = false;
 				}
-				else if (recovering == true && lossBalance > 0){
-					lossBalance -= ((currentBet * cashOut) - currentBet);
-					Math.ceil(lossBalance);
-					console.log("Amount to recover: " + lossBalance);
-					if((lossBalance * 2) < currentBet && lossBalance != 0){
-						currentBet = (lossBalance * 2);
-					}
-				}
-				else if (recovering == false){
-					console.log();
+				if((currentBet * 100) >= engine.getBalance()){
+					console.log("Not enough balance to place next recovery bet!");
+					currentBet = baseBet;
 				}
 				placeBet();
 				betPlaced = true;
