@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.60;
+var version = 1.61;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -95,7 +95,7 @@ var mode = 4;
 // 1 = Default - Mode will place a bet at the base amount and base multiplier. On loss, it will raise the bet by 4x and increase the multiplier to a max of 1.33x.
 // 2 = 9x Seeker - Mode will place the base amount and 9x multiplier. On loss, it will raise the bet by mode2multiplyBy until a 10x is reached.
 // 3 = Martingale - Multiplies on loss.
-// 4 = mess.js - *Some profound description here*
+// 4 = Modified Pluscoup - The real deal.
 
 //Do not edit below this line!
 
@@ -248,7 +248,7 @@ engine.on('game_starting', function(info){
 	}
 	
 	//Auto base bet
-	if(autoBaseBetEnabled == true && lastResult == "WON" || firstGame == true){
+	if(autoBaseBetEnabled == true && lastResult == "WON" || firstGame == true && mode != 4){
 		var divider = 100;
 		for (i = 0; i < maxLossCount; i++) {
 			if(mode == 1){
@@ -262,6 +262,17 @@ engine.on('game_starting', function(info){
 			}
 		}
 		baseBet = Math.min(Math.max(1, Math.floor((percentageOfTotal/100) * engine.getBalance() / divider)), maxBet * 100);
+	}
+	
+	//Mode 4 Auto base bet
+	if(autoBaseBetEnabled == true && lastResult == "WON" || firstGame == true && mode == 4){
+		var divider = 100;
+		for (i = 0; i < maxLossCount; i++) {
+			if(mode == 4){
+				divider += (100 * Math.pow(2, (i + 1)));
+			}
+		}
+		baseBet = Math.min(Math.max(1, Math.floor(((percentageOfTotal/100) * engine.getBalance() / divider) - excludeAmount)), maxBet * 100);
 	}
 	
 	if(takingBreak == false){
@@ -585,10 +596,6 @@ engine.on('game_starting', function(info){
 					}
 					if (lossBalance <= 0) {
 					    currentBet = baseBet;
-						if(engine.getBalance() >= (reserveAmount * 2)){
-							console.log("Doubled start balance! Reserving balance for bust.");
-							excludeAmount += reserveAmount;
-						}
 					}
 				}
 				else if(lossBalance <= 0 && recovering == true){
@@ -597,9 +604,14 @@ engine.on('game_starting', function(info){
 					firstLoss = true;
 					currentBet = baseBet;
 					recovering = false;
+					
+					if(engine.getBalance() >= ((reserveAmount * 2) * 100)){
+						console.log("Doubled start balance! Reserving balance for bust.");
+						excludeAmount += reserveAmount;
+					}
 				}
 				
-				if(currentBet >= (engine.getBalance() - excludeAmount)){
+				if(currentBet >= ((engine.getBalance() / 100) - excludeAmount)){
 					console.log("Not enough balance to place next recovery bet!");
 					if(excludeAmount > 0){
 						excludeAmount -= reserveAmount;
@@ -609,13 +621,13 @@ engine.on('game_starting', function(info){
 					betPlaced = true;
 				}
 				
-				if(currentBet >= ((engine.getBalance() / 8) - excludeAmount)){
+				if(currentBet >= ((engine.getBalance() / 8) - (excludeAmount * 100))){
 					console.log("Bet is becoming too large! Changing bet...");
-					currentBet = (engine.getBalance() / 8);
+					currentBet = ((engine.getBalance() / 8) / 100);
 					placeBet();
 					betPlaced = true;
 				}
-				else if ((currentBet < (engine.getBalance() / 8) - excludeAmount)){
+				else if ((currentBet < (((engine.getBalance() / 8) / 100) - excludeAmount))){
 					placeBet();
 					betPlaced = true;
 				}
