@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.61;
+var version = 1.62;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -149,6 +149,8 @@ var jsonInc
 var firstGrab = true;
 var recovering = false;
 var excludeAmount = 0;
+var hitMaxBet = 0;
+var lossStart = 0;
 
 //JSON Grabber
 var getJSON = function(url, callback) {
@@ -605,7 +607,7 @@ engine.on('game_starting', function(info){
 					currentBet = baseBet;
 					recovering = false;
 					
-					if(engine.getBalance() >= ((reserveAmount * 2) * 100)){
+					if((engine.getBalance() - (excludeAmount * 100)) >= ((reserveAmount * 2) * 100)){
 						console.log("Doubled start balance! Reserving balance for bust.");
 						excludeAmount += reserveAmount;
 					}
@@ -615,19 +617,33 @@ engine.on('game_starting', function(info){
 					console.log("Not enough balance to place next recovery bet!");
 					if(excludeAmount > 0){
 						excludeAmount -= reserveAmount;
+						console.log("Using reserve balance...");
 					}
 					currentBet = baseBet;
 					placeBet();
 					betPlaced = true;
 				}
 				
-				if(currentBet >= ((engine.getBalance() / 8) - (excludeAmount * 100))){
+				if(currentBet >= (((engine.getBalance() / 6) / 100) - excludeAmount)){
 					console.log("Bet is becoming too large! Changing bet...");
-					currentBet = ((engine.getBalance() / 8) / 100);
+					currentBet = ((engine.getBalance() / 6) / 100);
+					if(hitMaxBet == 0){
+						lossStart = engine.getBalance();
+					}
+					hitMaxBet ++;
 					placeBet();
 					betPlaced = true;
 				}
-				else if ((currentBet < (((engine.getBalance() / 8) / 100) - excludeAmount))){
+				else if ((currentBet < (((engine.getBalance() / 6) / 100) - excludeAmount))){
+					placeBet();
+					betPlaced = true;
+				}
+				
+				if(hitMaxBet >= 4 && engine.getBalance() < lossStart){
+					console.log("Too much bankroll is being lost! Returning to base bet.");
+					hitMaxBet = 0;
+					currentBet = baseBet;
+					lossBalance = 0;
 					placeBet();
 					betPlaced = true;
 				}
