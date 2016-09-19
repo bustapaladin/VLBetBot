@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.62;
+var version = 1.63;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -249,6 +249,23 @@ engine.on('game_starting', function(info){
 		console.log("Crash average: " + gameAverage + "x");
 	}
 	
+	//Mode 4 Exclude
+	if(mode == 4 & firstGame == true){
+		if((engine.getBalance() - (excludeAmount * 100)) >= ((reserveAmount * 2) * 100)){
+			mode4Exclude();
+		}
+	}
+	
+	function mode4Exclude(){
+		if((engine.getBalance() - (excludeAmount * 100)) >= ((reserveAmount * 2) * 100)){
+			console.log("Doubled exclude balance! Reserving balance for bust.");
+			excludeAmount += reserveAmount;
+		}
+		if((engine.getBalance() - (excludeAmount * 100)) >= ((reserveAmount * 2) * 100)){
+			mode4Exclude();
+		}
+	}
+	
 	//Auto base bet
 	if(autoBaseBetEnabled == true && lastResult == "WON" || firstGame == true && mode != 4){
 		var divider = 100;
@@ -268,13 +285,14 @@ engine.on('game_starting', function(info){
 	
 	//Mode 4 Auto base bet
 	if(autoBaseBetEnabled == true && lastResult == "WON" || firstGame == true && mode == 4){
+		var tempBalance = (engine.getBalance() - (excludeAmount * 100));
 		var divider = 100;
 		for (i = 0; i < maxLossCount; i++) {
 			if(mode == 4){
 				divider += (100 * Math.pow(2, (i + 1)));
 			}
 		}
-		baseBet = Math.min(Math.max(1, Math.floor(((percentageOfTotal/100) * engine.getBalance() / divider) - excludeAmount)), maxBet * 100);
+		baseBet = Math.min(Math.max(1, Math.floor((percentageOfTotal/100) * tempBalance / divider)), maxBet * 100);
 	}
 	
 	if(takingBreak == false){
@@ -624,29 +642,31 @@ engine.on('game_starting', function(info){
 					betPlaced = true;
 				}
 				
-				if(currentBet >= (((engine.getBalance() / 6) / 100) - excludeAmount)){
-					console.log("Bet is becoming too large! Changing bet...");
-					currentBet = ((engine.getBalance() / 6) / 100);
-					if(hitMaxBet == 0){
-						lossStart = engine.getBalance();
-					}
-					hitMaxBet ++;
+//				if(currentBet >= (((engine.getBalance() / 6) / 100) - excludeAmount)){
+//					console.log("Bet is becoming too large! Changing bet...");
+//					currentBet = ((engine.getBalance() / 6) / 100);
+//					if(hitMaxBet == 0){
+//						lossStart = engine.getBalance();
+//					}
+//					hitMaxBet ++;
+//					placeBet();
+//					betPlaced = true;
+//				}
+
+//				else if ((currentBet < (((engine.getBalance() / 6) / 100) - excludeAmount))){
+				else{
 					placeBet();
 					betPlaced = true;
 				}
-				else if ((currentBet < (((engine.getBalance() / 6) / 100) - excludeAmount))){
-					placeBet();
-					betPlaced = true;
-				}
-				
-				if(hitMaxBet >= 4 && engine.getBalance() < lossStart){
-					console.log("Too much bankroll is being lost! Returning to base bet.");
-					hitMaxBet = 0;
-					currentBet = baseBet;
-					lossBalance = 0;
-					placeBet();
-					betPlaced = true;
-				}
+//				
+//				if(hitMaxBet >= 4 && engine.getBalance() < lossStart){
+//					console.log("Too much bankroll is being lost! Returning to base bet.");
+//					hitMaxBet = 0;
+//					currentBet = baseBet;
+//					lossBalance = 0;
+//					placeBet();
+//					betPlaced = true;
+//				}
 			}
 		}
 	}
