@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.63;
+var version = 1.64;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -555,7 +555,7 @@ engine.on('game_starting', function(info){
 			}
 		}
 		
-		//Gamemode 4 (mess.js)
+		//Gamemode 4 (Pluscoup Modified)
 		if(mode == 4){
 			//Shutdown on max loss
 			if(lossCount > maxLossCount){
@@ -638,6 +638,8 @@ engine.on('game_starting', function(info){
 						console.log("Using reserve balance...");
 					}
 					currentBet = baseBet;
+					recovering = false;
+					lossBalance = 0;
 					placeBet();
 					betPlaced = true;
 				}
