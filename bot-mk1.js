@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.64;
+var version = 1.65;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -38,10 +38,10 @@ var maxBet = 99999999;
 
 
 //----------Crash Average----------//
-//(Only used in modes 1 and 3)
+//(Only used in modes 1)
 
 var useCrashAverage = true; 
-// Default: false - Enable editing current multiplier based on past 4 crash average. (Experimental!)
+// Default: false - Enable editing current multiplier based on past 4 crash average.
 
 var highAverage = 1.85; 
 // Default: 1.85 - Average multiplier to use the highAverageMultiplier.
@@ -82,9 +82,6 @@ var randomBreak = 0;
 
 var clearConsole = true;
 // Default: true - Clear the console after 500 minutes, usefull for running the bot on systems with low RAM.
-
-var experimentalFeatures = false;
-// Default: false - Enable experimental web-based settings.
 
 var reserveAmount = 10000;
 // Default: 10000 - Amount to reserve after profiting.
@@ -144,29 +141,12 @@ var waitTime = -1;
 var lossStreak;
 var alreadyRan;
 var highLow;
-var temptime = 500;
-var jsonInc
+var temptime = 120;
 var firstGrab = true;
 var recovering = false;
 var excludeAmount = 0;
 var hitMaxBet = 0;
 var lossStart = 0;
-
-//JSON Grabber
-var getJSON = function(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("get", url, true);
-    xhr.responseType = "json";
-    xhr.onload = function() {
-      var status = xhr.status;
-      if (status == 200) {
-        callback(null, xhr.response);
-      } else {
-        callback(status);
-      }
-    };
-    xhr.send();
-};
 
 if(startup == true){
 	if(mode == 3 && maxLossCount < 10){
@@ -175,7 +155,6 @@ if(startup == true){
 	}
 	
     printStartup();
-	jsonInc = randNum(1,999999);
 	startup = false;
 }
 
@@ -192,43 +171,6 @@ else{
 engine.on('game_starting', function(info){
 	currentGameID = info.game_id;
 	var random = randNum(1,100);
-    
-	if(experimentalFeatures == true){
-		getJSON(("https://crossorigin.me/http://vl1.voxelloop.co.uk/bustabit/" + user + "?" + jsonInc),
-		function(err, data) {
-		if (err != null) {
-			console.log("Something went wrong whilst grabbing the JSON: Error " + err);
-			console.log("Stopping bot!");
-			engine.stop();
-		} else {
-			jsonInc += 1;
-		
-			if(firstGrab == true){
-				//Insert stuff only to be grabbed once here
-				firstGrab = false;
-			}
-			
-			autoBaseBetEnabled = data.autoBaseBetEnabled;
-			maxLossCount = data.maxLossCount;
-			percentageOfTotal = data.percentageOfTotal;
-			baseBet = data.baseBet;
-			cashOut = data.cashOut;
-			maxBet = data.maxBet;
-			useCrashAverage = data.useCrashAverage;
-			highAverage = data.highAverage;
-			highAverageMultiplier = data.highAverageMultiplier;
-			waitForBeforeRecoveryEnabled = data.waitForBeforeRecoveryEnabled;
-			waitForBeforeRecovery = data.waitForBeforeRecovery;
-			mode2multiplyBy = data.mode2multiplyBy;
-			mode2waitAfterWin = data.mode2waitAfterWin;
-			maxNegative = data.maxNegative;
-			randomBreak = data.randomBreak;
-			clearConsole = data.clearConsole;
-			mode = data.mode;
-			console.log("User data loaded!");
-		}
-		});
-	}
 	
 	if(game4 != null){
 		gameAverage = (((game1 + game2) + (game3 + game4)) / 4);
@@ -644,31 +586,10 @@ engine.on('game_starting', function(info){
 					betPlaced = true;
 				}
 				
-//				if(currentBet >= (((engine.getBalance() / 6) / 100) - excludeAmount)){
-//					console.log("Bet is becoming too large! Changing bet...");
-//					currentBet = ((engine.getBalance() / 6) / 100);
-//					if(hitMaxBet == 0){
-//						lossStart = engine.getBalance();
-//					}
-//					hitMaxBet ++;
-//					placeBet();
-//					betPlaced = true;
-//				}
-
-//				else if ((currentBet < (((engine.getBalance() / 6) / 100) - excludeAmount))){
 				else{
 					placeBet();
 					betPlaced = true;
 				}
-//				
-//				if(hitMaxBet >= 4 && engine.getBalance() < lossStart){
-//					console.log("Too much bankroll is being lost! Returning to base bet.");
-//					hitMaxBet = 0;
-//					currentBet = baseBet;
-//					lossBalance = 0;
-//					placeBet();
-//					betPlaced = true;
-//				}
 			}
 		}
 	}
@@ -707,7 +628,7 @@ engine.on('game_crash', function(data){
 	
 	if(clearConsole == true){
 		if(timeplaying == temptime){
-			temptime += 500;
+			temptime += 120;
 			console.clear();
 		}
 	}
