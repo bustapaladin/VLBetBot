@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.66;
+var version = 1.67;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -82,6 +82,9 @@ var randomBreak = 0;
 
 var clearConsole = true;
 // Default: true - Clear the console after 500 minutes, usefull for running the bot on systems with low RAM.
+
+var limitedConsole = false;
+// Default: false - Limits the console output, good for running the script 24/7 and keeping the browser responsive.
 
 var reserveAmount = 10000;
 // Default: 10000 - Amount to reserve after profiting.
@@ -509,6 +512,7 @@ engine.on('game_starting', function(info){
 			if (resetLoss == true) {
 				if (lossCount == 0) {
 				resetLoss = false;
+				}
 			}
 			else {
 				lossCount--;
@@ -685,23 +689,31 @@ function printStartup(){
 }
 
 function printResults(){
-	if(currentGameID != null){
-		console.log("Game ID: ", currentGameID);
-	}
-	console.log("Crashed at: " + lastCrash + "x"); 
-	if(lastResult == "LOST"){
-		console.log("Result: %c LOST", 'background: #ffffff; color: #ff0000');
+	if(limitedConsole == false){
+		if(currentGameID != null){
+			console.log("Game ID: ", currentGameID);
+		}
+		console.log("Crashed at: " + lastCrash + "x"); 
+		if(lastResult == "LOST"){
+			console.log("Result: %c LOST", 'background: #ffffff; color: #ff0000');
+		}
+		else{
+			console.log("Result: %c WON", 'background: #ffffff; color: #339933');
+		}
+		console.log("Win Count: ", winCount);
+		console.log("Loss Count: ", lossCount);
+		console.log(" ");
+		console.log('Session profit: ' + ((engine.getBalance() - startBalance) / 100).toFixed(2) + ' ' + currency + ' in ' + Math.round(timeplaying) + ' minutes.');
+		console.log(" ");
+		if(mode == 4 && excludeAmount != 0){
+			console.log("Reserve balance: " + excludeAmount);
+		}
 	}
 	else{
-		console.log("Result: %c WON", 'background: #ffffff; color: #339933');
-	}
-	console.log("Win Count: ", winCount);
-	console.log("Loss Count: ", lossCount);
-	console.log(" ");
-	console.log('Session profit: ' + ((engine.getBalance() - startBalance) / 100).toFixed(2) + ' ' + currency + ' in ' + Math.round(timeplaying) + ' minutes.');
-	console.log(" ");
-	if(mode == 4 && excludeAmount != 0){
-		console.log("Reserve balance: " + excludeAmount);
+		console.log('Session profit: ' + ((engine.getBalance() - startBalance) / 100).toFixed(2) + ' ' + currency + ' in ' + Math.round(timeplaying) + ' minutes.');
+		if(mode == 4 && excludeAmount != 0){
+			console.log("Reserve balance: " + excludeAmount);
+		}
 	}
 }
 
