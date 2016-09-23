@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.67;
+var version = 1.68;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -84,7 +84,7 @@ var clearConsole = true;
 // Default: true - Clear the console after 500 minutes, usefull for running the bot on systems with low RAM.
 
 var limitedConsole = false;
-// Default: false - Limits the console output, good for running the script 24/7 and keeping the browser responsive.
+// Default: false - Limited console output, useful for running the bot 24/7, helps keep the browser responsive.
 
 var reserveAmount = 10000;
 // Default: 10000 - Amount to reserve after profiting.
@@ -512,7 +512,6 @@ engine.on('game_starting', function(info){
 			if (resetLoss == true) {
 				if (lossCount == 0) {
 				resetLoss = false;
-				}
 			}
 			else {
 				lossCount--;
@@ -710,6 +709,9 @@ function printResults(){
 		}
 	}
 	else{
+		if(currentGameID != null){
+			console.log("Game ID: ", currentGameID);
+		}
 		console.log('Session profit: ' + ((engine.getBalance() - startBalance) / 100).toFixed(2) + ' ' + currency + ' in ' + Math.round(timeplaying) + ' minutes.');
 		if(mode == 4 && excludeAmount != 0){
 			console.log("Reserve balance: " + excludeAmount);
