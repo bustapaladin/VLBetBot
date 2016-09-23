@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.65;
+var version = 1.66;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -581,6 +581,7 @@ engine.on('game_starting', function(info){
 					}
 					currentBet = baseBet;
 					recovering = false;
+					firstLoss = true;
 					lossBalance = 0;
 					placeBet();
 					betPlaced = true;
