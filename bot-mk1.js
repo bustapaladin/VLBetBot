@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.68;
+var version = 1.70;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -21,7 +21,7 @@ var BustaBit = true;
 var autoBaseBetEnabled = true; 
 // Default: false - Enable/Disable auto base bet. Described below.
 
-var maxLossCount = 9;
+var maxLossCount = 8;
 // Default: 5 - Max amount of loses to account for with autoBaseBetEnabled set to true.
 
 var percentageOfTotal = 100;
@@ -39,9 +39,6 @@ var maxBet = 99999999;
 
 //----------Crash Average----------//
 //(Only used in modes 1)
-
-var useCrashAverage = true; 
-// Default: false - Enable editing current multiplier based on past 4 crash average.
 
 var highAverage = 1.85; 
 // Default: 1.85 - Average multiplier to use the highAverageMultiplier.
@@ -93,8 +90,8 @@ var reserveAmount = 10000;
 var mode = 4; 
 
 // 1 = Default - Mode will place a bet at the base amount and base multiplier. On loss, it will raise the bet by 4x and increase the multiplier to a max of 1.33x.
-// 2 = 9x Seeker - Mode will place the base amount and 9x multiplier. On loss, it will raise the bet by mode2multiplyBy until a 10x is reached.
-// 3 = Martingale - Multiplies on loss.
+// *Deprecated* 2 = 9x Seeker - Mode will place the base amount and 9x multiplier. On loss, it will raise the bet by mode2multiplyBy until a 10x is reached.
+// *Deprecated* 3 = Martingale - Multiplies on loss.
 // 4 = Modified Pluscoup - The real deal.
 
 //Do not edit below this line!
@@ -114,14 +111,9 @@ var winCount = 0;
 var currentMultiplier;
 var lossBalance = 0;
 var firstLoss = true;
-var currentLoss = 0;
-var lastBet;
-var promptBet;
-var promptMultiplier;
-var promptMaxBet;
-var confirmSettings;
 var lastResult;
 var currency;
+var useCrashAverage = true;
 var startup = true;
 var d = new Date();
 var startTime = d.getTime();
@@ -129,9 +121,7 @@ var newdate;
 var timeplaying;
 var lastCrash;
 var betPlaced = false;
-var lastBalance;
 var tempBet;
-var profit;
 var tempCrash;
 var gameAverage = 0;
 var currentGame = 0;
@@ -142,18 +132,14 @@ var game4;
 var resetLoss;
 var waitTime = -1;
 var lossStreak;
-var alreadyRan;
-var highLow;
 var temptime = 120;
 var firstGrab = true;
 var recovering = false;
 var excludeAmount = 0;
-var hitMaxBet = 0;
-var lossStart = 0;
 
 if(startup == true){
-	if(mode == 3 && maxLossCount < 10){
-		window.alert("We suggest you set Max Loss Count to more than 10 for Martingale!");
+	if(mode == 2 || mode == 3){
+		window.alert("These modes have been removed! Please use modes 1 or 4.");
 		engine.stop();
 	}
 	
@@ -190,7 +176,7 @@ engine.on('game_starting', function(info){
 		takingBreak = false;
 	}
 	
-	if(gameAverage != 0){
+	if(gameAverage != 0 && mode == 1){
 		console.log("Crash average: " + gameAverage + "x");
 	}
 	
@@ -345,155 +331,6 @@ engine.on('game_starting', function(info){
 				if(game4 == null){
 					currentMultiplier = 1.02;
 				}
-			
-				placeBet();
-				betPlaced = true;
-			}
-		}
-		
-		//Gamemode 2 (9x Seeker)
-		if(mode == 2){
-			
-			if(cashOut < 7){
-				window.alert("Cash Out must be 7 or higher for this gamemode! (Suggested 7-9x)");
-				console.log("Cash Out must be 7 or higher for this gamemode! (Suggested 7-9x)");
-				engine.stop();
-			}
-			
-			if(maxLossCount < 10){
-				window.alert("Max Loss Count must be 10 or higher for this gamemode! (Suggested 20+)");
-				console.log("Max Loss Count must be 10 or higher for this gamemode! (Suggested 20+)");
-				engine.stop();
-			}
-			
-			if(lossCount >= maxLossCount){
-				console.log("Max Loss Count reached! Stopping bot...");
-				engine.stop();
-			}
-			
-			//First Game
-			if(firstGame == true && betPlaced == false){
-				currentBet = baseBet;
-				currentMultiplier = cashOut;
-				firstGame = false;
-				newdate = new Date();
-				timeplaying = ((newdate.getTime() - startTime) / 1000) / 60;
-				placeBet();
-				betPlaced = true;
-			}
-			
-			//On Loss
-			if(lastResult == "LOST" && betPlaced == false && firstGame == false){
-				
-				if(firstLoss == true){
-					firstLoss = false;
-					lossBalance = 0;
-					lossBalance = (currentBet * mode2multiplyBy);
-					//currentBet = Math.floor(lossBalance.toFixed(1));
-					currentBet = Math.round(lossBalance.toFixed(1));
-					currentMultiplier = cashOut;
-					console.log("Bet changed to: " + currentBet);
-					placeBet();
-					betPlaced = true;
-				}
-				
-				else{
-					lossBalance *= mode2multiplyBy;
-					//currentBet = Math.floor(lossBalance.toFixed(1));
-					currentBet = Math.round(lossBalance.toFixed(1));
-					currentMultiplier = cashOut;
-					console.log("Bet changed to: " + currentBet);
-					placeBet();
-					betPlaced = true;
-				}
-			}
-			
-			//On Win
-			if(lastResult == "WON" && betPlaced == false){
-				
-				if(mode2waitAfterWin > 0){
-					if(waitTime == -1){
-						waitTime = mode2waitAfterWin;
-					}
-					else{
-						waitTime -= 1;
-						console.log("Cooldown remaining: " + waitTime);
-					}
-					if(waitTime == 0){
-						waitTime = -1;
-						console.log("Cooldown finished!");
-						currentBet = baseBet;
-						currentMultiplier = cashOut;
-						firstLoss = true;
-						placeBet();
-						betPlaced = true;
-					}
-				}
-				else{
-					currentBet = baseBet;
-					currentMultiplier = cashOut;
-					firstLoss = true;
-					placeBet();
-					betPlaced = true;
-				}
-			}
-		}
-		
-		//Gamemode 3 (Martingale)
-		if(mode == 3){
-			
-			//Shutdown on max loss
-			if(lossCount > maxLossCount){
-				console.log("Max loss count reached! Shutting down...");
-				engine.stop();
-			}
-			
-			//Reset cooldown
-			if (resetLoss == true) {
-				if (lossCount == 0) {
-				resetLoss = false;
-			}
-			else {
-				lossCount--;
-				console.log('Waiting a few games! Games remaining: ' + lossCount);
-				return;
-				}
-			}
-			
-			//First Game
-			if(firstGame == true && betPlaced == false){
-				currentBet = baseBet;
-				currentMultiplier = mode3cashOut;
-				firstGame = false;
-				placeBet();
-				newdate = new Date();
-				timeplaying = ((newdate.getTime() - startTime) / 1000) / 60;
-				betPlaced = true;
-			}
-			
-			//On Lost
-			if(lastResult == "LOST" && betPlaced == false && firstGame == false){
-				
-				if(firstLoss == true){
-					lossBalance = 0;
-					lossStreak = 0;
-					firstLoss = false;
-				}
-				
-				lossStreak++;
-				currentBet *= 2;
-				currentMultiplier = mode3cashOut;
-				console.log("Bet changed to: " + currentBet);
-				placeBet();
-				betPlaced = true;
-			}
-			
-			//On Win
-			if(lastResult == "WON" && betPlaced == false){
-				
-				currentBet = baseBet;
-				currentMultiplier = mode3cashOut;
-				firstLoss = true;
 			
 				placeBet();
 				betPlaced = true;
