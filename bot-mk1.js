@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.72;
+var version = 1.73;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -455,7 +455,10 @@ engine.on('game_crash', function(data){
 	}
 	
 	if(mode == 4 && gameResult == "WON"){
-		mode4Exclude();
+		if((engine.getBalance() - (excludeAmount * 100)) >= ((reserveAmount * 2) * 100)){
+			console.log("Doubled exclude balance! Reserving balance for bust.");
+			excludeAmount += reserveAmount;
+		}
 	}
 	
 	if(gameResult == "WON" && gameInside == true){
