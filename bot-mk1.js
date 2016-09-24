@@ -454,6 +454,7 @@ engine.on('game_crash', function(data){
 		takingBreak = false;
 	}
 	
+	if(mode == 4 && gameResult == "WON"){
 		mode4Exclude();
 	}
 	
