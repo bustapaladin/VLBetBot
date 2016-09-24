@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.71;
+var version = 1.72;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -452,6 +452,9 @@ engine.on('game_crash', function(data){
 	if(takingBreak == true)
 	{
 		takingBreak = false;
+	}
+	
+		mode4Exclude();
 	}
 	
 	if(gameResult == "WON" && gameInside == true){
