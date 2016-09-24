@@ -10,7 +10,7 @@
 */
 
 //Version
-var version = 1.70;
+var version = 1.71;
 
 //----------Site----------//
 var BustaBit = true; 
@@ -198,7 +198,7 @@ engine.on('game_starting', function(info){
 	}
 	
 	//Auto base bet
-	if(autoBaseBetEnabled == true && lastResult == "WON" || firstGame == true && mode != 4){
+	if(autoBaseBetEnabled == true && lastResult == "WON" && mode != 4 || firstGame == true && mode != 4){
 		var divider = 100;
 		for (i = 0; i < maxLossCount; i++) {
 			if(mode == 1){
@@ -215,15 +215,15 @@ engine.on('game_starting', function(info){
 	}
 	
 	//Mode 4 Auto base bet
-	if(autoBaseBetEnabled == true && lastResult == "WON" || firstGame == true && mode == 4){
-		var tempBalance = (engine.getBalance() - (excludeAmount * 100));
+	if(autoBaseBetEnabled == true && lastResult == "WON" && mode == 4 || firstGame == true && mode == 4){
+		//var tempBalance = (engine.getBalance() - (excludeAmount * 100));
 		var divider = 100;
 		for (i = 0; i < maxLossCount; i++) {
 			if(mode == 4){
 				divider += (100 * Math.pow(2, (i + 1)));
 			}
 		}
-		baseBet = Math.min(Math.max(1, Math.floor((percentageOfTotal/100) * tempBalance / divider)), maxBet * 100);
+		baseBet = Math.min(Math.max(1, Math.floor((percentageOfTotal/100) * (engine.getBalance() - (excludeAmount * 100)) / divider)), maxBet * 100);
 	}
 	
 	if(takingBreak == false){
